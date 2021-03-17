@@ -4,16 +4,15 @@ let now = new Date()
 setState({now: now, latitude: latitude, longitude: longitude})
 drawChart();
 
-// if ('geolocation' in navigator) {
-//     navigator.geolocation.getCurrentPosition((position) => {
-//         latitude = position.coords.latitude;
-//         longitude = position.coords.longitude;
+if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition((position) => {
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
 
-//         setState({latitude: latitude, longitude: longitude})        
-//         drawChart();
-//     })
-// }
-
+        setState({latitude: latitude, longitude: longitude})        
+        drawChart();
+    })
+}
 
 function setState(obj) {
     if (obj.now) {
