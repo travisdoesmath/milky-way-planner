@@ -308,6 +308,23 @@ SunCalc.getMoonTimes = function (date, lat, lng, inUTC) {
     return result;
 };
 
+SunCalc.getStarPosition = function(date, lat, lng, ra, dec) {
+    var lw  = rad * -lng,
+        phi = rad * lat,
+        d   = toDays(date),
+        // ra = (17 + 45/60 + 40.04/3600) * Math.PI/12,
+        // dec = -(29 + 28.1/3600) * Math.PI/180,
+        ra_rad = ra * Math.PI/12,
+        dec_rad = dec * Math.PI/180,
+        H = siderealTime(d, lw) - ra_rad,
+        h = altitude(H, phi, dec_rad);
+
+    return {
+        azimuth: azimuth(H, phi, dec_rad),
+        altitude: h,
+    };
+}
+
 SunCalc.getGCPosition = function (date, lat, lng) {
 
     var lw  = rad * -lng,
@@ -366,8 +383,6 @@ SunCalc.getGalacticCenterTimes = function (date, lat, lng) {
     }
 
     var result = {};
-
-    console.log(rise, set)
 
     if (rise) result.rise = hoursLater(t, rise);
     if (set) result.set = hoursLater(t, set);
