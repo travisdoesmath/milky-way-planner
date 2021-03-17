@@ -14,6 +14,12 @@
     <div class="column" id="body">
         <h1 class="title">Milky Way Planner</h1>
         <svg id="chartSvg"></svg>
+        <input id="startTime" type="datetime-local"><span id="tzInfo"></span>
+        <div>
+            <input type="number" id="latitude" min="-90" max ="90"><input type="number" id="longitude" min="-180" max ="180">
+        </div>
+        <svg id="moonSvg"></svg>
+        <p id='phase'></p>
     </div>
     <!-- <script src="helpers.js"></script> -->
     <script src="main.js"></script>
