@@ -60,6 +60,10 @@ legend>item {
   font-size: 20px;
 }
 
+#getLocation {
+  margin-left: 10px;
+}
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     /* display: none; <- Crashes Chrome on hover */

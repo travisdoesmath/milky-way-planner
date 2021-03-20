@@ -5,13 +5,18 @@ setState({now: now, latitude: latitude, longitude: longitude})
 drawChart();
 
 if ('geolocation' in navigator) {
-    navigator.geolocation.getCurrentPosition((position) => {
-        latitude = position.coords.latitude;
-        longitude = position.coords.longitude;
+    d3.select("#location").append('button')
+        .attr('id', 'getLocation')
+        .text("Get My Location")
+        .on('click', () => {
+            navigator.geolocation.getCurrentPosition((position) => {
+                latitude = position.coords.latitude;
+                longitude = position.coords.longitude;
 
-        setState({latitude: latitude, longitude: longitude})        
-        drawChart();
-    })
+                setState({latitude: latitude, longitude: longitude})        
+                drawChart();
+            })
+        })
 }
 
 function setState(obj) {
@@ -30,30 +35,68 @@ function setState(obj) {
 }
 
 function drawChart() {
-    console.log('draw')
     now = new Date(d3.select('#startTime').property('value') + 'Z')
     latitude = +d3.select('#latitude').property('value')
     longitude = +d3.select('#longitude').property('value')
 
-    let startTime = new Date(now)
-    startTime.setDate(now.getDate())
-    startTime.setMinutes(Math.floor(startTime.getMinutes() / 15)*15, 0)
+    days = []
+    for (let i = -2; i <= 1; i++) {
+        day = new Date(now)
+        day.setDate(now.getDate() - i)
+        day.setHours(12, 0, 0)
+    }
 
-    let endTime = new Date(now)
-    endTime.setDate(now.getDate() + 1)
+    sunTimes = days.map(x => SunCalc.getTimes(x, latitude, longitude))
+    moonTimes = days.map(x => SunCalc.getMoonTimes(x, latitude, longitude))
+    galacticCenterTimes = days.map(x => SunCalc.getGalacticCenterTimes(x, latitude, longitude))
+
+    moonTimes = []
+    sunTimes = []
+    gcTimes = []
+
+    for (let i = -1; i <= 2; i++) {
+        day = new Date(now)
+        day.setDate(now.getDate() + i)
+        day.setHours(12, 0, 0)
+        moonTimes.push(SunCalc.getMoonTimes(day, latitude, longitude))
+        //sunTime = SunCalc.getTimes(day, latitude, longitude)
+        //sunTimes.push({'night': sunTime.night, 'nightEnd':sunTime.nightEnd})
+        sunTimes.push(SunCalc.getTimes(day, latitude, longitude))
+        gcTimes.push(SunCalc.getGalacticCenterTimes(day, latitude, longitude))
+    }
+
+    flatSunTimes = [].concat.apply([], sunTimes.map(x => Object.entries(x)))
+        .map(x => {return {'time':x[1], 'type':x[0]}; })
+        .sort((a, b) => a.time.valueOf() - b.time.valueOf())
+        .filter(x => !isNaN(x.time) && x.type !== 'nadir' && x.type !== 'sunrise' && x.type !== 'sunset')
+
+
+    daylightEnds = flatSunTimes.filter(x => (x.type == 'goldenHour' && x.time < now))
+    
+    startTime = new Date(now)
+    //startTime.setDate(now.getDate())
+    startTime.setMinutes(0, 0)
+
+    endTime = new Date(startTime)
+    //endTime.setDate(now.getDate())
     endTime.setHours(12, 0, 0)
 
-    console.log('startTime', startTime)
-    console.log('endTime', endTime)
+    if (daylightEnds.length > 0) {
+        startTime = new Date(daylightEnds[daylightEnds.length - 1].time)
+        startTime.setMinutes(0, 0)
+    }
 
-    yesterday = new Date(now)
-    yesterday.setDate(now.getDate() - 1)
-    yesterday.setHours(12,0,0)
-    today = new Date(now)
-    today.setHours(12,0,0)
-    tomorrow = new Date(now)
-    tomorrow.setDate(now.getDate() + 1)
-    tomorrow.setHours(12,0,0)
+    daylightStarts = flatSunTimes.filter(x => (x.type == 'goldenHourEnd' && x.time >= startTime))
+
+    if (daylightStarts.length > 0) {
+        endTime = new Date(daylightStarts[1].time)
+        endTime.setMinutes(60, 0)
+    }
+
+    if (now > daylightStarts[0].time) {
+        startTime = new Date(now)
+        startTime.setMinutes(0, 0)
+    }
 
     d3.select('#startTime')
         .property('value', now.toISOString().substring(0, now.toISOString().length - 8))
@@ -81,24 +124,7 @@ function drawChart() {
 
 
 
-    sunTimes = [yesterday, today, tomorrow].map(x => SunCalc.getTimes(x, latitude, longitude))
-    moonTimes = [yesterday, today, tomorrow].map(x => SunCalc.getMoonTimes(x, latitude, longitude))
-    galacticCenterTimes = [yesterday, today, tomorrow].map(x => SunCalc.getGalacticCenterTimes(x, latitude, longitude))
 
-    moonTimes = []
-    sunTimes = []
-    gcTimes = []
-
-    for (let i = -1; i <= 2; i++) {
-        day = new Date(now)
-        day.setDate(today.getDate() + i)
-        day.setHours(12, 0, 0)
-        moonTimes.push(SunCalc.getMoonTimes(day, latitude, longitude))
-        //sunTime = SunCalc.getTimes(day, latitude, longitude)
-        //sunTimes.push({'night': sunTime.night, 'nightEnd':sunTime.nightEnd})
-        sunTimes.push(SunCalc.getTimes(day, latitude, longitude))
-        gcTimes.push(SunCalc.getGalacticCenterTimes(day, latitude, longitude))
-    }
 
     // flatMoonTimes = [].concat.apply([], moonTimes.map(x => Object.entries(x)))
     //     .map(x => {return {'time':x[1], 'type':x[0]}; })
@@ -107,10 +133,6 @@ function drawChart() {
     // flatGCTimes = [].concat.apply([], gcTimes.map(x => Object.entries(x))).map(x => {return {'time':x[1], 'type':x[0]}; }).sort((a, b) => a.time.valueOf() - b.time.valueOf()).filter(x => !isNaN(x.time))
 
 
-    flatSunTimes = [].concat.apply([], sunTimes.map(x => Object.entries(x)))
-        .map(x => {return {'time':x[1], 'type':x[0]}; })
-        .sort((a, b) => a.time.valueOf() - b.time.valueOf())
-        .filter(x => !isNaN(x.time) && x.type !== 'nadir')
 
     sunBlockTimes = []
 
@@ -201,6 +223,15 @@ function drawChart() {
         'daySky': '#ffff73'
     }
 
+    nowColors = {
+        'nightSky': 'white',
+        'darkSky' : 'white',
+        'twilight': 'white',
+        'riseSet': 'white',
+        'goldenHour': 'black',
+        'daySky': 'black'
+    }
+
     sunColor = {
         'nadir': skyColors.nightSky,
         'nightEnd': skyColors.darkSky,
@@ -244,6 +275,31 @@ function drawChart() {
         return colorTypes[type]
     }
 
+    function nowColor(time) {
+        let sunTimes = flatSunTimes.filter(x => x.time < time)
+        let type = sunTimes[sunTimes.length - 1].type
+
+        let colorTypes = {
+            'nadir': nowColors.nightSky,
+            'nightEnd': nowColors.darkSky,
+            'nauticalDawn': nowColors.twilight,
+            'dawn': nowColors.riseSet,
+            'sunrise': nowColors.riseSet,
+            'sunriseEnd': nowColors.goldenHour,
+            'goldenHourEnd': nowColors.daySky,
+
+            'solarNoon': nowColors.daySky,
+            'goldenHour': nowColors.goldenHour,
+            'sunsetStart': nowColors.riseSet,
+            'sunset': nowColors.riseSet,
+            'dusk': nowColors.twilight,
+            'nauticalDusk': nowColors.darkSky,
+            'night': nowColors.nightSky
+        }
+
+        return colorTypes[type]
+    }
+
     sunBlocks = maskedG.selectAll('.sunBlock').data(sunBlockTimes)
         .enter()
         .append('rect')
@@ -253,7 +309,7 @@ function drawChart() {
         .attr('height', chartHeight)
         .attr('fill', d => sunColor[d[0].type])
         // .attr('fill', 'black')
-
+    
     maskedG.append('g')
         .attr('class', 'x axis-grid')
         //.attr('transform', `translate(0,${chartHeight})`)
@@ -264,6 +320,12 @@ function drawChart() {
     .attr('transform', `translate(0, ${chartHeight})`)
     .call(xAxis)
 
+    maskedG.append('line')
+        .attr('x1', xScale(now))
+        .attr('x2', xScale(now))
+        .attr('y1', 0)
+        .attr('y2', chartHeight)
+        .attr('stroke', nowColor(now))
 
     let moonPositions = []
     let gcPositions = []
@@ -286,9 +348,6 @@ function drawChart() {
         moonPosition.time = time
         if (moonPosition.altitude > 0) moonPositions.push(moonPosition)
     }
-
-    console.log("moonPositions", moonPositions)
-    console.log("gcPositions", gcPositions)
 
     let galaxyLineRadius = 0.5
 
