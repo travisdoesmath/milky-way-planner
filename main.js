@@ -38,6 +38,7 @@ function drawChart() {
     let startTime = new Date(now)
     startTime.setDate(now.getDate())
     startTime.setMinutes(Math.floor(startTime.getMinutes() / 15)*15, 0)
+
     let endTime = new Date(now)
     endTime.setDate(now.getDate() + 1)
     endTime.setHours(12, 0, 0)
@@ -55,7 +56,7 @@ function drawChart() {
     tomorrow.setHours(12,0,0)
 
     d3.select('#startTime')
-        .property('value', now.toISOString().substring(0, now.toISOString().length - 1))
+        .property('value', now.toISOString().substring(0, now.toISOString().length - 8))
         .on('change', function() {
             setState({now: new Date(d3.select(this).property('value')+'Z')});
             drawChart();
@@ -99,9 +100,17 @@ function drawChart() {
         gcTimes.push(SunCalc.getGalacticCenterTimes(day, latitude, longitude))
     }
 
-    flatMoonTimes = [].concat.apply([], moonTimes.map(x => Object.entries(x))).map(x => {return {'time':x[1], 'type':x[0]}; }).sort((a, b) => a.time.valueOf() - b.time.valueOf())
-    flatSunTimes = [].concat.apply([], sunTimes.map(x => Object.entries(x))).map(x => {return {'time':x[1], 'type':x[0]}; }).sort((a, b) => a.time.valueOf() - b.time.valueOf())
-    flatGCTimes = [].concat.apply([], gcTimes.map(x => Object.entries(x))).map(x => {return {'time':x[1], 'type':x[0]}; }).sort((a, b) => a.time.valueOf() - b.time.valueOf())
+    // flatMoonTimes = [].concat.apply([], moonTimes.map(x => Object.entries(x)))
+    //     .map(x => {return {'time':x[1], 'type':x[0]}; })
+    //     .sort((a, b) => a.time.valueOf() - b.time.valueOf())
+    //     .filter(x => !isNaN(x.time) && x.type !== 'nadir')
+    // flatGCTimes = [].concat.apply([], gcTimes.map(x => Object.entries(x))).map(x => {return {'time':x[1], 'type':x[0]}; }).sort((a, b) => a.time.valueOf() - b.time.valueOf()).filter(x => !isNaN(x.time))
+
+
+    flatSunTimes = [].concat.apply([], sunTimes.map(x => Object.entries(x)))
+        .map(x => {return {'time':x[1], 'type':x[0]}; })
+        .sort((a, b) => a.time.valueOf() - b.time.valueOf())
+        .filter(x => !isNaN(x.time) && x.type !== 'nadir')
 
     sunBlockTimes = []
 
@@ -110,13 +119,11 @@ function drawChart() {
         if (flatSunTimes[i].time < endTime) sunBlockTimes.push(block);
     }
 
-
-
     let height = 200;
     let width = 960;
 
     let margin = {
-        top: 20,
+        top: 0,
         right: 20,
         bottom: 20,
         left: 0
@@ -128,6 +135,8 @@ function drawChart() {
     const svg = d3.select("#chartSvg")
         .attr('height', height)
         .attr('width', width)
+
+    const legend = d3.select('legend')
 
     svg.html('')
 
@@ -149,6 +158,7 @@ function drawChart() {
     yScale = d3.scaleLinear().domain([0, Math.PI/2]).range([chartHeight, 0])
 
     xAxis = d3.axisBottom(xScale)
+    xAxisGrid = d3.axisBottom(xScale).ticks(d3.utcHour.every(1)).tickSize(chartHeight)
 
     skyColors = {
         'nightSky': '#000026',
@@ -158,6 +168,29 @@ function drawChart() {
         'goldenHour': '#ffcc73',
         'daySky': '#ffff73'
     }
+
+    legend.html('')
+    legend.append('div').text('Legend: ')
+    legend.selectAll('item').data(Object.entries(skyColors))
+        .enter()
+        .append('item')
+        .style('background-color', d => d[1])
+        .style('color', d => {
+            if (d[0] == 'nightSky') return "white";
+            if (d[0] == 'darkSky') return "white";
+            if (d[0] == 'twilight') return "white";
+            if (d[0] == 'riseSet') return "white";
+            if (d[0] == 'goldenHour') return "black";
+            if (d[0] == 'daySky') return "black";
+        })
+        .text(d => {
+            if (d[0] == 'nightSky') return "Nighttime";
+            if (d[0] == 'darkSky') return "Astronomical Twilight";
+            if (d[0] == 'twilight') return "Nautical Twilight";
+            if (d[0] == 'riseSet') return "Civil Twilight";
+            if (d[0] == 'goldenHour') return "Golden Hour";
+            if (d[0] == 'daySky') return "Daytime";
+        })
 
     gcColors = {
         'nightSky': '#f1ebd3',
@@ -221,6 +254,10 @@ function drawChart() {
         .attr('fill', d => sunColor[d[0].type])
         // .attr('fill', 'black')
 
+    maskedG.append('g')
+        .attr('class', 'x axis-grid')
+        //.attr('transform', `translate(0,${chartHeight})`)
+        .call(xAxisGrid)
 
     g.append('g')
     .attr('class', 'x-axis')
@@ -250,16 +287,19 @@ function drawChart() {
         if (moonPosition.altitude > 0) moonPositions.push(moonPosition)
     }
 
-    let galaxyLineRadius = 300
+    console.log("moonPositions", moonPositions)
+    console.log("gcPositions", gcPositions)
+
+    let galaxyLineRadius = 0.5
 
     maskedG.selectAll('.gcPosition').data(gcPositions)
         .enter()
     .append('line')
-        .attr('x1', d => xScale(d.time) + galaxyLineRadius*(d.position0.azimuth - d.position1.azimuth))
-        .attr('x2', d => xScale(d.time) - galaxyLineRadius*(d.position0.azimuth - d.position1.azimuth))
+        .attr('x1', d => xScale(d.time) + galaxyLineRadius*(d.position0.azimuth - d.position1.azimuth) / ((d.position0.azimuth - d.position1.azimuth)**2 + (d.position0.altitude - d.position1.altitude)**2) )
+        .attr('x2', d => xScale(d.time) - galaxyLineRadius*(d.position0.azimuth - d.position1.azimuth) / ((d.position0.azimuth - d.position1.azimuth)**2 + (d.position0.altitude - d.position1.altitude)**2) )
         // .attr('x2', d => xScale(d.time) + 5)
-        .attr('y1', d => yScale(d.position0.altitude) - galaxyLineRadius*(d.position0.altitude - d.position1.altitude))
-        .attr('y2', d => yScale(d.position1.altitude) + galaxyLineRadius*(d.position0.altitude - d.position1.altitude))
+        .attr('y1', d => yScale(d.position0.altitude) - galaxyLineRadius*(d.position0.altitude - d.position1.altitude) / ((d.position0.azimuth - d.position1.azimuth)**2 + (d.position0.altitude - d.position1.altitude)**2) )
+        .attr('y2', d => yScale(d.position1.altitude) + galaxyLineRadius*(d.position0.altitude - d.position1.altitude) / ((d.position0.azimuth - d.position1.azimuth)**2 + (d.position0.altitude - d.position1.altitude)**2) )
         // .attr('y2', d => yScale(d.position1.altitude))
         .attr('stroke', d => gcColor(d.time))
 
@@ -290,27 +330,53 @@ function drawChart() {
         .attr('transform', d => `translate(${xScale(d.time)},${yScale(d.altitude)})`)
         .attr('fill', '#222')
 
-    // bigMoonDiameter = 100
+    legendDiameter = 32
 
-    // // d3.select('#phase').text(phase)
+    d3.select('legend').append('item').text('Moon:').style('margin-right', 0).style('float', 'left')
 
-    // moonSvg = d3.select('#moonSvg')
-    //     .attr('width', 100)
-    //     .attr('height', 100)
+    moonSvg = d3.select('legend').append('svg')
+        .attr('width', legendDiameter)
+        .attr('height', legendDiameter)
+        .style('float', 'left')
 
-    // moonSvg.html('')
+    moonSvg.append('circle')
+        .attr('cx', 0.5*legendDiameter)
+        .attr('cy', 0.5*legendDiameter)
+        .attr('r', 0.5*legendDiameter)
+        .attr('fill', '#DDD')
 
-    // moonSvg.append('circle')
-    //     .attr('cx', 50)
-    //     .attr('cy', 50)
-    //     .attr('r', 0.5*bigMoonDiameter)
-    //     .attr('fill', '#DDD')
+    moonSvg.append('path')
+        .attr('d', d => `M0 ${-0.5*legendDiameter}` + 
+                        `c${(2*phase % 1 - 0.5) * legendDiameter * 4/3} 0, ${(2*phase % 1 - 0.5) * legendDiameter * 4/3} ${legendDiameter}, 0 ${legendDiameter} ` +
+                        `c${(phase > 0.5 ? -1 : 1) * legendDiameter * 2/3} 0, ${(phase > 0.5 ? -1 : 1) * legendDiameter * 2/3} ${-legendDiameter}, 0 ${-legendDiameter}`)
+        .attr('transform', `translate(${0.5*legendDiameter},${0.5*legendDiameter})`)
+        .attr('fill', '#222')
 
-    // moonSvg.append('path')
-    //     .attr('d', d => `M0 ${-0.5*bigMoonDiameter}` + 
-    //                     `c${(2*phase % 1 - 0.5) * bigMoonDiameter * 4/3} 0, ${(2*phase % 1 - 0.5) * bigMoonDiameter * 4/3} ${bigMoonDiameter}, 0 ${bigMoonDiameter} ` +
-    //                     `c${(phase > 0.5 ? -1 : 1) * bigMoonDiameter * 2/3} 0, ${(phase > 0.5 ? -1 : 1) * bigMoonDiameter * 2/3} ${-bigMoonDiameter}, 0 ${-bigMoonDiameter}`)
-    //     .attr('transform', `translate(${0.5*bigMoonDiameter},${0.5*bigMoonDiameter})`)
-    //     .attr('fill', '#222')
+    d3.select('legend').append('item').text('Galactic center:').style('margin-right', 0)
+
+    gcSvg = d3.select('legend').append('svg')
+        .attr('width', legendDiameter)
+        .attr('height', legendDiameter)
+        .style('float', 'left')
+
+    gcSvg.append('rect')
+        .attr('width', legendDiameter)
+        .attr('height', legendDiameter)
+        .attr('fill', skyColors['nightSky'])
+
+    gcSvg.append('line')
+        .attr('x1', 0.2*legendDiameter)
+        .attr('x2', 0.8*legendDiameter)
+        .attr('y1', 0.3*legendDiameter)
+        .attr('y2', 0.7*legendDiameter)
+        .attr('stroke', gcColors['nightSky'])
+
+    gcSvg.append('circle')
+        .attr('cx', 0.5*legendDiameter)
+        .attr('cy', 0.5*legendDiameter)
+        .attr('r', 2)
+        .attr('fill', gcColors['nightSky'])
+
+
 }
 

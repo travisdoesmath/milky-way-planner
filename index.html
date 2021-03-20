@@ -13,12 +13,15 @@
 <body>
     <div class="column" id="body">
         <h1 class="title">Milky Way Planner</h1>
+        <h3>Altitude of Galactic Center and Moon</h3>
         <svg id="chartSvg"></svg>
-        <input id="startTime" type="datetime-local"><span id="tzInfo"></span>
+        <legend></legend>
         <div>
-            <input type="number" id="latitude" min="-90" max ="90"><input type="number" id="longitude" min="-180" max ="180">
+            <input id="startTime" type="datetime-local"><span id="tzInfo"></span>
+            <div>
+                <input type="number" id="latitude" min="-90" max ="90"><input type="number" id="longitude" min="-180" max ="180">
+            </div>
         </div>
-        <svg id="moonSvg"></svg>
         <p id='phase'></p>
     </div>
     <!-- <script src="helpers.js"></script> -->
