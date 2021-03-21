@@ -6,14 +6,14 @@
     <meta property="og:description" content="Is tonight a good night to photograph the Milky Way?">
     <meta property="og:image" content="https://travisdoesmath.github.io/milky-way-planner/preview.png">
     <meta property="og:url" content="https://travisdoesmath.github.io/milky-way-planner/">
-    <script src="https://d3js.org/d3.v6.min.js"></script>
-    <script src="suncalc.js"></script>
-    <script src="luxon.min.js"></script>
+    <script src="static/js/d3.v6.min.js"></script>
+    <script src="static/js/suncalc.js"></script>
+    <script src="static/js/luxon.min.js"></script>
     <script>
         var DateTime = luxon.DateTime;
     </script>
-    <script src="tz.js"></script>
-    <link href="style.css" rel="stylesheet">
+    <script src="static/js/tz.js"></script>
+    <link href="static/css/style.css" rel="stylesheet">
 </head>
 <body>
     <div class="column" id="body">
@@ -22,20 +22,28 @@
         <svg id="chartSvg"></svg>
         <legend></legend>
         <div id="inputs">
-            <div>
-                <input id="date" type="date">
-            </div>
-            <div id="location">
-                <input type="number" id="latitude" min="-90" max ="90"><input type="number" id="longitude" min="-180" max ="180"><span id="tzInfo"></span>
-            </div>
-            <div id="locationButton">
-
-            </div>
+            <input id="date" type="date">
+            <input type="number" id="latitude" min="-90" max ="90">
+            <input type="number" id="longitude" min="-180" max ="180">
+            <div id="tzInfo"></div>
+            <div id="locationButton"></div>
         </div>
-        <p id='phase'></p>
+        <h3>About</h3>
+        <p>This chart shows how high in the sky (or the <em>altitude</em>) of the galactic center and Moon at a given time. The chart starts at noon (local to the entered latitude and longitude) and ends at noon the following day.</p>
+        <p>While the Milky Way can always be seen in a dark enough sky, the galactic center is not always visible. The galactic center is also the more visually interesting section of the Milky Way, so when planning to take photos of the Milky Way, it is worthwhile to plan when the galactic center will be visible.</p>
+        <p>Like all celestial objects, the center of the Milky Way appears to rise from the east and set in the west, reaching its heighest point (or <em>transit</em>) when it passes through the arc of the sky running North to South.</p>
+        <p>There is also an approximation of what angle the galaxy will appear at when the galactic center is visible. For more precise estimation, I suggest using <a href="http://stellarium.org/">Stellarium</a>.</p>
+        <h3>How to Use</h3>
+        <p>The date and latitude and longitude coordinates can all be edited. The planner will estimate the timezone based on the latitude and longitude coordinates. You may also get your current location coordinates by pressing the "Get My Location" button, if your browser supports it (but to be frank, I only tested this on Chrome, and at this point, I would be shocked if it worked on anything less than a very modern browser).</p>
+        <p>Ideally, you are looking for times during the night sky where the galactic center is visible, but after the moon has set and before it has risen.</p>
+        <p>This page does not account for weather or light pollution, so double check that you are considering a place with dark enough skies, and double check the weather before you go out to take photos!</p>
+        <h3>More</h3>
+        <p>All the code for this page is available at my <a href="https://github.com/travisdoesmath/milky-way-planner">github repo</a>. Libraries used are <a href="https://d3js.org/">D3.js</a>, <a href="https://moment.github.io/luxon/index.html">Luxon</a>, <a href="https://github.com/darkskyapp/tz-lookup-oss/">tz-lookup</a>, and a modified version of <a href="https://github.com/mourner/suncalc">SunCalc</a>. </p>
+        <p>If you would like to support me and <a href="https://travisdoesmath.github.io/">other projects like this</a>, please consider buying me a coffee:</p>
+        <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="travisdoesmath" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
     </div>
     <!-- <script src="helpers.js"></script> -->
-    <script src="main.js"></script>
+    <script src="static/js/main.js"></script>
     <img src="preview.png" style="display:none">
 </body>
 </html>

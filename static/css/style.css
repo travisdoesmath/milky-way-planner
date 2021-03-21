@@ -26,6 +26,9 @@ h1 {
 }
 
 legend {
+  position: relative;
+  left: 20px;
+  top: 10px;
   width: 100%;
   float: right;
 }
@@ -41,12 +44,25 @@ legend>item {
 
 #inputs {
   float: left;
+  position: relative;
+  left: 20px;
+  top: 10px;
+  width: 100%;
 }
 
 #inputs > * {
   float: left;
+  height: 30px;
+  line-height: 100%;
 }
 
+#inputs>#date {
+  margin-right: 10px;
+}
+
+#locationButton {
+  margin-top: 6px;
+}
 
 
 .axis-grid line {

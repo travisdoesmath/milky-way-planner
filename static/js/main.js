@@ -160,7 +160,6 @@ function initializeLayout() {
     layout.legend = d3.select('legend')
 
     layout.legend.html('')
-    layout.legend.append('div').text('Legend: ')
     layout.legend.selectAll('item').data(Object.entries(drawState.skyColors))
         .enter()
         .append('item')
