@@ -305,27 +305,31 @@ function plotSunAndGC() {
 
     function nowColor(time) {
         let sunTimes = flatSunTimes.filter(x => x.time < time)
-        let type = sunTimes[sunTimes.length - 1].type
+        if (sunTimes.length > 0) {
+            let type = sunTimes[sunTimes.length - 1].type
 
-        let colorTypes = {
-            'nadir': drawState.nowColors.nightSky,
-            'nightEnd': drawState.nowColors.darkSky,
-            'nauticalDawn': drawState.nowColors.twilight,
-            'dawn': drawState.nowColors.riseSet,
-            'sunrise': drawState.nowColors.riseSet,
-            'sunriseEnd': drawState.nowColors.goldenHour,
-            'goldenHourEnd': drawState.nowColors.daySky,
+            let colorTypes = {
+                'nadir': drawState.nowColors.nightSky,
+                'nightEnd': drawState.nowColors.darkSky,
+                'nauticalDawn': drawState.nowColors.twilight,
+                'dawn': drawState.nowColors.riseSet,
+                'sunrise': drawState.nowColors.riseSet,
+                'sunriseEnd': drawState.nowColors.goldenHour,
+                'goldenHourEnd': drawState.nowColors.daySky,
 
-            'solarNoon': drawState.nowColors.daySky,
-            'goldenHour': drawState.nowColors.goldenHour,
-            'sunsetStart':drawState. nowColors.riseSet,
-            'sunset': drawState.nowColors.riseSet,
-            'dusk': drawState.nowColors.twilight,
-            'nauticalDusk': drawState.nowColors.darkSky,
-            'night': drawState.nowColors.nightSky
+                'solarNoon': drawState.nowColors.daySky,
+                'goldenHour': drawState.nowColors.goldenHour,
+                'sunsetStart':drawState. nowColors.riseSet,
+                'sunset': drawState.nowColors.riseSet,
+                'dusk': drawState.nowColors.twilight,
+                'nauticalDusk': drawState.nowColors.darkSky,
+                'night': drawState.nowColors.nightSky
+            }
+
+            return colorTypes[type]
+        } else {
+            return 'black'
         }
-
-        return colorTypes[type]
     }
 
     let xScale = drawState.xScale
