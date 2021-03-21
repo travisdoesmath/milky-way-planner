@@ -8,6 +8,11 @@
     <meta property="og:url" content="https://travisdoesmath.github.io/milky-way-planner/">
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="suncalc.js"></script>
+    <script src="luxon.min.js"></script>
+    <script>
+        var DateTime = luxon.DateTime;
+    </script>
+    <script src="tz.js"></script>
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
@@ -16,10 +21,15 @@
         <h3>Altitude of Galactic Center and Moon</h3>
         <svg id="chartSvg"></svg>
         <legend></legend>
-        <div>
-            <input id="startTime" type="datetime-local"><span id="tzInfo"></span>
+        <div id="inputs">
+            <div>
+                <input id="date" type="date">
+            </div>
             <div id="location">
-                <input type="number" id="latitude" min="-90" max ="90"><input type="number" id="longitude" min="-180" max ="180">
+                <input type="number" id="latitude" min="-90" max ="90"><input type="number" id="longitude" min="-180" max ="180"><span id="tzInfo"></span>
+            </div>
+            <div id="locationButton">
+
             </div>
         </div>
         <p id='phase'></p>

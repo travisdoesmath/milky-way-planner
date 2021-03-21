@@ -27,7 +27,7 @@ h1 {
 
 legend {
   width: 100%;
-  /* float: right; */
+  float: right;
 }
 
 legend>item {
@@ -39,22 +39,32 @@ legend>item {
   font-weight: bold;
 }
 
+#inputs {
+  float: left;
+}
+
+#inputs > * {
+  float: left;
+}
+
+
+
 .axis-grid line {
   stroke: #AAA;
   opacity: 0.25;
 }
 
 
-#startTime {
+#date {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
-  width: 256px;
+  width: 160px;
   border: none;
   outline: none;
   font-size: 20px;
 }
 
 #latitude, #longitude {
-  width: 80px;
+  width: 90px;
   border: none;
   outline: none;
   font-size: 20px;
